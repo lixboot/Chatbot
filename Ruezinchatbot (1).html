@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L I X ChatBot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--bg-color); transition: 0.3s; }
+        :root { --bg-color: #121212; --chat-bg: #1e1e1e; --text-color: white; --btn-color: #25D366; }
+        .light-mode { --bg-color: #f5f5f5; --chat-bg: white; --text-color: black; --btn-color: #007AFF; }
+        .chat-container { width: 90%; max-width: 400px; padding: 20px; background: var(--chat-bg); color: var(--text-color); border-radius: 10px; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3); }
+        .message { padding: 12px; margin: 10px 0; border-radius: 10px; font-size: 14px; background: rgba(255, 255, 255, 0.1); animation: fadeIn 0.5s ease-in-out; position: relative; }
+        .message a { color: #FFD700; text-decoration: none; font-weight: bold; }
+        .message a:hover { text-decoration: underline; }
+        .typing { font-style: italic; color: #aaa; }
+        .btn { margin-top: 10px; padding: 10px; background: var(--btn-color); color: white; border: none; cursor: pointer; width: 100%; border-radius: 5px; transition: 0.3s; }
+        .btn:hover { opacity: 0.8; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .toggle-theme { font-size: 16px; cursor: pointer; }
+        .chat-box { max-height: 300px; overflow-y: auto; scrollbar-width: thin; padding-right: 5px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h2>ChatBot Automático</h2>
+            <span class="toggle-theme" onclick="toggleTheme()">🌙</span>
+        </div>
+        <div id="chat-box" class="chat-box"></div>
+        <button class="btn" onclick="sendMessage()">🔄 Gerar Nova Previsão</button>
+        <button class="btn" onclick="copyToClipboard()">📩 Copiar para WhatsApp</button>
+        <button class="btn" onclick="clearChat()">🗑️ Limpar Chat</button>
+    </div>
+
+    <audio id="notification-sound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const sound = document.getElementById("notification-sound");
+
+        function getRandomMultiplier(color) {
+            if (color === "AZUL") return (Math.random() * (1.99 - 1.10) + 1.10).toFixed(2);
+            if (color === "ROXO") return (Math.random() * (9.99 - 2.00) + 2.00).toFixed(2);
+            return (Math.random() * (20.00 - 9.99) + 9.99).toFixed(2);
+        }
+
+        function getRandomColor() {
+            const cores = ["AZUL", "ROXO", "ROSA"];
+            return cores[Math.floor(Math.random() * cores.length)];
+        }
+
+        function generateMessage() {
+            const agora = new Date();
+            const horas = agora.getHours().toString().padStart(2, '0');
+            const minutos = (agora.getMinutes() + 3).toString().padStart(2, '0');
+            const corEscolhida = getRandomColor();
+            const multiplicador = getRandomMultiplier(corEscolhida);
+            return `🕒 Hora: ${horas}:${minutos}\n🎨 POSSÍVEL COR: ${corEscolhida}\n📈 POSSÍVEL ${multiplicador}X\n✅ Gráfico estável!\n🏠 <a href="https://www.placard.co.mz/" target="_blank">CASA</a>`;
+        }
+
+        function sendMessage() {
+            const typingTime = Math.random() * 1000 + 500;
+            const typing = document.createElement("div");
+            typing.classList.add("message", "typing");
+            typing.innerText = "Digitando...";
+            chatBox.appendChild(typing);
+
+            setTimeout(() => {
+                chatBox.removeChild(typing);
+                const message = document.createElement("div");
+                message.classList.add("message");
+                message.innerHTML = generateMessage();
+                chatBox.appendChild(message);
+                sound.play();
+                localStorage.setItem("chatHistory", chatBox.innerHTML);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, typingTime);
+        }
+
+        function copyToClipboard() {
+            const messages = document.querySelectorAll(".message");
+            let text = "";
+            messages.forEach(msg => text += msg.innerText + "\n");
+            navigator.clipboard.writeText(text);
+            alert("📩 Mensagens copiadas!");
+        }
+
+        function clearChat() {
+            if (confirm("Tem certeza que deseja limpar o chat?")) {
+                chatBox.innerHTML = "";
+                localStorage.removeItem("chatHistory");
+            }
+        }
+
+        function loadChatHistory() {
+            const history = localStorage.getItem("chatHistory");
+            if (history) chatBox.innerHTML = history;
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("light-mode");
+            const themeIcon = document.querySelector(".toggle-theme");
+            themeIcon.innerText = document.body.classList.contains("light-mode") ? "🌞" : "🌙";
+        }
+
+        loadChatHistory();
+        setInterval(sendMessage, 30000);
+    </script>
+</body>
+</html>
